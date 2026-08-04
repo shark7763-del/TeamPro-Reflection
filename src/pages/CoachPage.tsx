@@ -6,6 +6,7 @@ import { Card } from '../components/Card'
 import { EmptyState } from '../components/EmptyState'
 import { roleLabels } from '../data/questions'
 import { useTeamProData } from '../hooks/useTeamProData'
+import { pullFromGoogleSheet, pushToGoogleSheet } from '../services/googleSheetSync'
 import { makeId, parseBackup } from '../services/storage'
 import type { ReflectionRound } from '../types/domain'
 import { average, formatDate } from '../utils/score'
@@ -28,6 +29,7 @@ export const CoachPage = () => {
   })
   const [clearText, setClearText] = useState('')
   const [message, setMessage] = useState('')
+  const [scriptUrl, setScriptUrl] = useState(data.settings.googleScriptUrl ?? '')
   const fileRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
@@ -85,6 +87,31 @@ export const CoachPage = () => {
     if (!confirm('確定清除全部資料嗎？此動作無法復原。')) return
     localStorage.removeItem('teampro-reflection-data')
     window.location.reload()
+  }
+
+  const saveScriptUrl = () => {
+    setData((current) => ({
+      ...current,
+      settings: { ...current.settings, googleScriptUrl: scriptUrl.trim() },
+    }))
+    setMessage('Google Sheet 同步網址已儲存到這台裝置。')
+  }
+
+  const pushCloud = async () => {
+    const url = scriptUrl.trim() || data.settings.googleScriptUrl || ''
+    const result = await pushToGoogleSheet(url, { ...data, settings: { ...data.settings, googleScriptUrl: url } })
+    setMessage(result.message)
+  }
+
+  const pullCloud = async () => {
+    const url = scriptUrl.trim() || data.settings.googleScriptUrl || ''
+    const result = await pullFromGoogleSheet(url)
+    if (!result.ok || !result.data) {
+      setMessage(result.message)
+      return
+    }
+    setData({ ...result.data, settings: { ...result.data.settings, googleScriptUrl: url } })
+    setMessage('已從 Google Sheet 更新共同後台資料。')
   }
 
   const unlockCoachPage = () => {
@@ -154,6 +181,29 @@ export const CoachPage = () => {
         </div>
       </div>
       {message && <p className="rounded-lg bg-blue-50 p-3 text-sm font-semibold text-team-navy">{message}</p>}
+
+      <Card>
+        <div className="flex items-center gap-2">
+          <Database size={20} className="text-team-orange" />
+          <h2 className="text-xl font-black text-team-navy">Google Sheet 共同後台</h2>
+        </div>
+        <p className="mt-2 text-sm leading-6 text-team-muted">
+          貼上 Google Apps Script Web App URL 後，學生送出紀錄會同步寫入同一張 Google Sheet。尚未設定時，資料仍只存在本機。
+        </p>
+        <div className="mt-4 grid gap-2">
+          <input
+            value={scriptUrl}
+            onChange={(event) => setScriptUrl(event.target.value)}
+            placeholder="https://script.google.com/macros/s/...../exec"
+            className="min-h-12 rounded-lg border border-slate-200 p-3 outline-none focus:border-team-blue focus:ring-4 focus:ring-blue-100"
+          />
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Button type="button" variant="secondary" onClick={saveScriptUrl}>儲存同步網址</Button>
+            <Button type="button" variant="secondary" onClick={() => void pushCloud()}>同步到 Google Sheet</Button>
+            <Button type="button" variant="secondary" onClick={() => void pullCloud()}>從 Google Sheet 讀取</Button>
+          </div>
+        </div>
+      </Card>
 
       <Card>
         <div className="grid gap-3 md:grid-cols-4">

@@ -5,6 +5,7 @@ import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { nextActionOptions, roleLabels } from '../data/questions'
 import { useTeamProData } from '../hooks/useTeamProData'
+import { pushToGoogleSheet } from '../services/googleSheetSync'
 import { makeId } from '../services/storage'
 import type { ReflectionDraft, ReflectionRecord } from '../types/domain'
 import { formatDate, getPreviousRecord, getScoreMessage, scoreDeltaText } from '../utils/score'
@@ -72,7 +73,11 @@ export const ResultPage = () => {
       nextAction,
       createdAt: draft.createdAt,
     }
-    setData((current) => ({ ...current, records: [...current.records, record] }))
+    const nextData = { ...data, records: [...data.records, record] }
+    setData(nextData)
+    if (data.settings.googleScriptUrl) {
+      void pushToGoogleSheet(data.settings.googleScriptUrl, nextData)
+    }
     sessionStorage.removeItem(draft.id)
     navigate(`/complete/${record.id}`, { replace: true })
   }

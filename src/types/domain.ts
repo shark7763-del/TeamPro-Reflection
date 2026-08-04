@@ -37,6 +37,7 @@ export interface ReflectionRecord {
 export interface AppSettings {
   teamName: string
   currentRoundId: string
+  googleScriptUrl?: string
 }
 
 export interface TeamProData {
