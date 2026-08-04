@@ -1,4 +1,5 @@
 import type { AppSettings, ReflectionRecord, ReflectionRound, Student, TeamProData } from '../types/domain'
+import { createDefaultStudents } from '../data/defaultStudents'
 
 export const STORAGE_KEY = 'teampro-reflection-data'
 
@@ -17,11 +18,7 @@ export const createDefaultData = (): TeamProData => {
     createdAt: now,
   }
 
-  const students: Student[] = [
-    { id: createId('student'), name: '王小明', grade: '七年級', note: '示範資料', createdAt: now },
-    { id: createId('student'), name: '陳小華', grade: '八年級', note: '示範資料', createdAt: now },
-    { id: createId('student'), name: '林小安', grade: '九年級', note: '示範資料', createdAt: now },
-  ]
+  const students: Student[] = createDefaultStudents(now, createId)
 
   return {
     version: 1,
