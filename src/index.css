@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  --teampro-navy: #12365f;
+  --teampro-blue: #1f5f99;
+  --teampro-orange: #f28c28;
+  --teampro-ink: #172033;
+  --teampro-muted: #627084;
+  --teampro-bg: #f6f8fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--teampro-bg);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--teampro-ink);
+  background:
+    radial-gradient(circle at top left, rgba(242, 140, 40, 0.16), transparent 30rem),
+    linear-gradient(180deg, #f8fbff 0%, #eef4f8 100%);
+  font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 44px;
+}
+
+@theme {
+  --color-team-navy: #12365f;
+  --color-team-blue: #1f5f99;
+  --color-team-orange: #f28c28;
+  --color-team-ink: #172033;
+  --color-team-muted: #627084;
+  --color-team-bg: #f6f8fb;
+}
