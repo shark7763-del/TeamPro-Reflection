@@ -1,18 +1,18 @@
 import { Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { EmptyState } from '../components/EmptyState'
-import { roleLabels } from '../data/questions'
+import { impactTargetLabels, previousActionStatusLabels, roleLabels } from '../data/questions'
 import { useTeamProData } from '../hooks/useTeamProData'
 import type { ReflectionRole } from '../types/domain'
-import { formatDate, getPreviousRecord, scoreDeltaText } from '../utils/score'
+import { formatDate, getRecordCategoryScores, scoreDeltaText, getPreviousRecord } from '../utils/score'
 
 type Filter = 'all' | ReflectionRole
 
-export const RecordsPage = () => {
+export const RecordsPage = ({ coachMode = false }: { coachMode?: boolean }) => {
   const { studentId } = useParams()
   const { data, setData } = useTeamProData()
   const [filter, setFilter] = useState<Filter>('all')
@@ -24,10 +24,9 @@ export const RecordsPage = () => {
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   }, [data.records, filter, studentId])
 
-  if (!studentId || !student) return <Navigate to="/students/records" replace />
+  if (!studentId || !student) return <Navigate to={coachMode ? '/coach' : '/students/records'} replace />
 
   const latest = records.at(-1)
-  const highest = records.length ? Math.max(...records.map((record) => record.totalScore)) : 0
   const deleteRecord = (id: string) => {
     if (!confirm('確定要刪除這筆反思紀錄嗎？')) return
     setData((current) => ({ ...current, records: current.records.filter((record) => record.id !== id) }))
@@ -39,11 +38,17 @@ export const RecordsPage = () => {
         <p className="text-sm font-bold text-team-orange">{student.grade}</p>
         <h1 className="mt-1 text-2xl font-black text-team-navy sm:text-3xl">{student.name} 的成長紀錄</h1>
       </div>
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Card><p className="text-sm text-team-muted">累積反思次數</p><p className="mt-1 text-3xl font-black text-team-navy">{records.length}</p></Card>
         <Card><p className="text-sm text-team-muted">最近一次分數</p><p className="mt-1 text-3xl font-black text-team-navy">{latest ? latest.totalScore : '-'}</p></Card>
-        <Card><p className="text-sm text-team-muted">個人最高分</p><p className="mt-1 text-3xl font-black text-team-navy">{highest || '-'}</p></Card>
-        <Card><p className="text-sm text-team-muted">最近一次行動目標</p><p className="mt-1 font-bold leading-6 text-team-ink">{latest?.nextAction ?? '尚無紀錄'}</p></Card>
+        <Card><p className="text-sm text-team-muted">上一次行動</p><p className="mt-1 font-bold text-team-navy">{latest?.previousActionStatus ? previousActionStatusLabels[latest.previousActionStatus] : '尚無資料'}</p></Card>
+        <Card><p className="text-sm text-team-muted">最近下一步</p><p className="mt-1 font-bold leading-6 text-team-ink">{latest?.nextAction ?? '尚無紀錄'}</p></Card>
+        <Card>
+          <p className="text-sm text-team-muted">三個面向最近分數</p>
+          <div className="mt-2 grid gap-1 text-sm font-semibold text-team-navy">
+            {latest ? getRecordCategoryScores(latest).map((item) => <span key={item.category}>{item.label}：{item.score}/{item.maxScore}</span>) : '尚無資料'}
+          </div>
+        </Card>
       </div>
 
       <Card>
@@ -90,11 +95,17 @@ export const RecordsPage = () => {
                   <h3 className="mt-1 text-2xl font-black text-team-navy">{record.totalScore} / 50 分</h3>
                   <p className="mt-1 text-sm font-semibold text-team-muted">{scoreDeltaText(delta)}</p>
                 </div>
-                <Button type="button" variant="ghost" onClick={() => deleteRecord(record.id)}><Trash2 size={17} />刪除</Button>
+                {coachMode && <Button type="button" variant="ghost" onClick={() => deleteRecord(record.id)}><Trash2 size={17} />刪除</Button>}
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <p className="rounded-lg bg-slate-50 p-3 text-sm leading-6"><b>做得最好：</b>{record.bestReflection || record.bestItem}</p>
-                <p className="rounded-lg bg-slate-50 p-3 text-sm leading-6"><b>需要改進：</b>{record.improvementReflection || record.improvementItem}</p>
+                {getRecordCategoryScores(record).map((item) => (
+                  <p key={item.category} className="rounded-lg bg-slate-50 p-3 text-sm leading-6"><b>{item.label}：</b>{item.score}/{item.maxScore}</p>
+                ))}
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <p className="rounded-lg bg-slate-50 p-3 text-sm leading-6"><b>上次行動：</b>{record.previousActionStatus ? previousActionStatusLabels[record.previousActionStatus] : '尚無資料'}</p>
+                <p className="rounded-lg bg-slate-50 p-3 text-sm leading-6"><b>影響對象：</b>{record.impactTarget ? impactTargetLabels[record.impactTarget] : '尚無資料'}</p>
+                <p className="rounded-lg bg-blue-50 p-3 text-sm leading-6"><b>發生了什麼：</b>{record.reflectionEvent || record.improvementReflection || '尚無資料'}</p>
                 <p className="rounded-lg bg-orange-50 p-3 text-sm leading-6"><b>下一次：</b>{record.nextAction}</p>
               </div>
             </Card>

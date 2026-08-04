@@ -1,5 +1,5 @@
 import type { TeamProData } from '../types/domain'
-import { isValidGoogleScriptUrl } from './storage'
+import { isValidGoogleScriptUrl, migrateData } from './storage'
 
 export interface SyncResult {
   ok: boolean
@@ -19,7 +19,7 @@ const request = async (url: string, action: string, data?: TeamProData): Promise
       body: JSON.stringify({ action, data }),
     })
     const result = (await response.json()) as SyncResult
-    return result
+    return result.data ? { ...result, data: migrateData(result.data) } : result
   } catch {
     return { ok: false, message: '無法連線到 Google Sheet，同步暫時失敗。' }
   }

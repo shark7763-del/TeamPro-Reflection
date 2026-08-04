@@ -22,6 +22,7 @@ export default function App() {
         <Route path="/result/:draftId" element={<ResultPage />} />
         <Route path="/complete/:recordId" element={<CompletePage />} />
         <Route path="/records/:studentId" element={<RecordsPage />} />
+        <Route path="/coach/records/:studentId" element={<RecordsPage coachMode />} />
         <Route path="/coach" element={<CoachPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

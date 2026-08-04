@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardList, Database, Play, Users } from 'lucide-react'
+import { CalendarDays, Database, Play, Users } from 'lucide-react'
 import { ButtonLink } from '../components/Button'
 import { Card } from '../components/Card'
 import { EmptyState } from '../components/EmptyState'
@@ -23,19 +23,11 @@ export const HomePage = () => {
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
             <ButtonLink to="/students/reflect" className="bg-team-orange text-team-ink hover:bg-[#f5a142]">
               <Play size={18} />
-              開始反思
-            </ButtonLink>
-            <ButtonLink to="/students/records" variant="secondary">
-              <ClipboardList size={18} />
-              查看我的紀錄
+              學生開始反思
             </ButtonLink>
             <ButtonLink to="/coach" variant="secondary">
               <Database size={18} />
-              教練查看
-            </ButtonLink>
-            <ButtonLink to="/roster" variant="secondary">
-              <Users size={18} />
-              名單管理
+              教練管理
             </ButtonLink>
           </div>
         </div>
@@ -62,6 +54,11 @@ export const HomePage = () => {
           </div>
           <div className="mt-6 rounded-lg bg-orange-50 p-4 text-sm leading-6 text-slate-700">
             目前輪次：{data.rounds.find((round) => round.id === data.settings.currentRoundId)?.title ?? '尚未設定'}
+            {data.rounds.find((round) => round.id === data.settings.currentRoundId)?.teamGoal && (
+              <div className="mt-2 font-semibold text-team-navy">
+                團隊共同目標：{data.rounds.find((round) => round.id === data.settings.currentRoundId)?.teamGoal}
+              </div>
+            )}
           </div>
         </Card>
       </section>

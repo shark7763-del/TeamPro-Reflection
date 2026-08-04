@@ -52,10 +52,12 @@ function saveAll_(spreadsheet, data) {
   ], ['key', 'value']);
 
   writeObjects_(spreadsheet.getSheetByName(SHEETS.students), data.students, ['id', 'name', 'grade', 'note', 'createdAt']);
-  writeObjects_(spreadsheet.getSheetByName(SHEETS.rounds), data.rounds, ['id', 'title', 'startDate', 'endDate', 'isActive', 'createdAt']);
+  writeObjects_(spreadsheet.getSheetByName(SHEETS.rounds), data.rounds, ['id', 'title', 'startDate', 'endDate', 'isActive', 'teamGoal', 'createdAt']);
   writeObjects_(spreadsheet.getSheetByName(SHEETS.records), data.records.map((record) => ({
     ...record,
     answers: JSON.stringify(record.answers),
+    categoryScores: JSON.stringify(record.categoryScores || []),
+    peerRecognition: JSON.stringify(record.peerRecognition || null),
   })), [
     'id',
     'studentId',
@@ -65,9 +67,14 @@ function saveAll_(spreadsheet, data) {
     'totalScore',
     'bestItem',
     'improvementItem',
+    'categoryScores',
+    'previousActionStatus',
+    'reflectionEvent',
+    'impactTarget',
     'bestReflection',
     'improvementReflection',
     'nextAction',
+    'peerRecognition',
     'createdAt',
   ]);
 }
@@ -85,11 +92,14 @@ function loadAll_(spreadsheet) {
     rounds: readObjects_(spreadsheet.getSheetByName(SHEETS.rounds)).map((round) => ({
       ...round,
       isActive: round.isActive === true || round.isActive === 'TRUE' || round.isActive === 'true',
+      teamGoal: round.teamGoal || '',
     })),
     records: readObjects_(spreadsheet.getSheetByName(SHEETS.records)).map((record) => ({
       ...record,
       totalScore: Number(record.totalScore),
       answers: JSON.parse(record.answers || '[]'),
+      categoryScores: JSON.parse(record.categoryScores || '[]'),
+      peerRecognition: record.peerRecognition ? JSON.parse(record.peerRecognition) : undefined,
     })),
     settings,
   };

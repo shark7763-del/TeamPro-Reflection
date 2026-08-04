@@ -1,6 +1,6 @@
 import { Activity, Home, ShieldCheck, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 
 const navItems = [
   { to: '/', label: '首頁', icon: Home },
@@ -10,7 +10,22 @@ const navItems = [
 ]
 
 export const AppLayout = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen">
+  <LayoutContent>{children}</LayoutContent>
+)
+
+const LayoutContent = ({ children }: { children: ReactNode }) => {
+  const location = useLocation()
+  const studentMode =
+    location.pathname.startsWith('/students') ||
+    location.pathname.startsWith('/role') ||
+    location.pathname.startsWith('/reflect') ||
+    location.pathname.startsWith('/result') ||
+    location.pathname.startsWith('/complete') ||
+    location.pathname.startsWith('/records')
+  const visibleNavItems = studentMode ? navItems.filter((item) => item.to !== '/coach') : navItems
+
+  return (
+    <div className="min-h-screen">
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/92 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-3">
@@ -23,7 +38,7 @@ export const AppLayout = ({ children }: { children: ReactNode }) => (
           </div>
         </Link>
         <nav className="hidden items-center gap-1 sm:flex">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon
             return (
               <NavLink
@@ -47,8 +62,8 @@ export const AppLayout = ({ children }: { children: ReactNode }) => (
     <main className="mx-auto max-w-6xl px-4 py-5 pb-24 sm:py-8">{children}</main>
 
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white sm:hidden">
-      <div className="grid grid-cols-4">
-        {navItems.map((item) => {
+      <div className={visibleNavItems.length === 3 ? 'grid grid-cols-3' : 'grid grid-cols-4'}>
+        {visibleNavItems.map((item) => {
           const Icon = item.icon
           return (
             <NavLink
@@ -67,5 +82,6 @@ export const AppLayout = ({ children }: { children: ReactNode }) => (
         })}
       </div>
     </nav>
-  </div>
-)
+    </div>
+  )
+}

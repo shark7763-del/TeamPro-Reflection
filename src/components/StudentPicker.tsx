@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react'
 import { GRADES, type Student } from '../types/domain'
 import { Card } from './Card'
 import { EmptyState } from './EmptyState'
-import { formatDate } from '../utils/score'
 import type { ReflectionRecord } from '../types/domain'
 
 interface StudentPickerProps {
@@ -54,11 +53,11 @@ export const StudentPicker = ({ students, records, onSelect }: StudentPickerProp
                             <p className="text-lg font-black text-team-ink">{student.name}</p>
                             <p className="mt-1 text-sm text-team-muted">{student.grade}</p>
                           </div>
-                          <span className="rounded-full bg-orange-50 px-3 py-1 text-sm font-black text-team-orange">
-                            {latest ? `${latest.totalScore}分` : '未填'}
+                          <span className={`rounded-full px-3 py-1 text-sm font-black ${latest ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-team-muted'}`}>
+                            {latest ? '已完成' : '未完成'}
                           </span>
                         </div>
-                        <p className="mt-4 text-sm text-team-muted">最近一次：{latest ? formatDate(latest.createdAt) : '尚無紀錄'}</p>
+                        <p className="mt-4 text-sm text-team-muted">最近是否完成反思：{latest ? '是' : '否'}</p>
                       </Card>
                     </button>
                   )
