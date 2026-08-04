@@ -11,6 +11,7 @@ export const isValidGoogleScriptUrl = (url?: string) =>
 
 const today = () => new Date().toISOString().slice(0, 10)
 const createId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`
+const removedDefaultStudentNames = new Set(['陳夏銘'])
 const isRecord = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value)
 const isString = (value: unknown): value is string => typeof value === 'string'
 const isNumberArray = (value: unknown): value is number[] =>
@@ -117,7 +118,9 @@ const migrateRecord = (value: unknown): ReflectionRecord | null => {
 
 export const migrateData = (value: unknown): TeamProData => {
   if (!isRecord(value)) throw new Error('資料格式不是物件。')
-  const students = Array.isArray(value.students) ? value.students.map(migrateStudent).filter((item): item is Student => item !== null) : []
+  const students = Array.isArray(value.students)
+    ? value.students.map(migrateStudent).filter((item): item is Student => item !== null && !removedDefaultStudentNames.has(item.name))
+    : []
   const rounds = Array.isArray(value.rounds) ? value.rounds.map(migrateRound).filter((item): item is ReflectionRound => item !== null) : []
   const records = Array.isArray(value.records) ? value.records.map(migrateRecord).filter((item): item is ReflectionRecord => item !== null) : []
   if (!Array.isArray(value.students) || !Array.isArray(value.rounds) || !Array.isArray(value.records)) {
@@ -134,7 +137,7 @@ export const migrateData = (value: unknown): TeamProData => {
     version: 2,
     students: [...students, ...missingDefaultStudents],
     rounds: nextRounds,
-    records,
+    records: records.filter((record) => students.some((student) => student.id === record.studentId)),
     settings: {
       teamName: isString(settingsValue.teamName) ? settingsValue.teamName : 'TeamPro',
       currentRoundId: isString(settingsValue.currentRoundId) ? settingsValue.currentRoundId : activeRound.id,

@@ -10,7 +10,6 @@ const defaultStudentSeeds: DefaultStudentSeed[] = [
   { name: '陸品蓉', grade: '七年級', note: '班級701' },
   { name: '黃梓晴', grade: '七年級', note: '班級701' },
   { name: '蘇虹睿', grade: '七年級', note: '班級701' },
-  { name: '陳夏銘', grade: '七年級', note: '班級701' },
   { name: '趙婕妤', grade: '七年級', note: '班級701' },
   { name: '甄仁邦', grade: '七年級', note: '班級701' },
   { name: '王曉田', grade: '七年級', note: '班級701' },
