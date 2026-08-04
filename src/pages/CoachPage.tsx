@@ -13,9 +13,13 @@ import { exportJson, exportRecordsCsv } from '../utils/export'
 
 const thisMonthPrefix = () => new Date().toISOString().slice(0, 7)
 const today = () => new Date().toISOString().slice(0, 10)
+const COACH_PASSWORD = '1234'
+const COACH_AUTH_KEY = 'teampro-coach-unlocked'
 
 export const CoachPage = () => {
   const { data, setData, activeRound } = useTeamProData()
+  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(COACH_AUTH_KEY) === 'true')
+  const [password, setPassword] = useState('')
   const [query, setQuery] = useState('')
   const [roundForm, setRoundForm] = useState({
     title: `${new Date().getFullYear()}年${new Date().getMonth() + 1}月團隊反思`,
@@ -83,6 +87,51 @@ export const CoachPage = () => {
     window.location.reload()
   }
 
+  const unlockCoachPage = () => {
+    if (password !== COACH_PASSWORD) {
+      setMessage('密碼錯誤，請重新輸入。')
+      return
+    }
+    sessionStorage.setItem(COACH_AUTH_KEY, 'true')
+    setIsAuthenticated(true)
+    setPassword('')
+    setMessage('')
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto max-w-md space-y-5">
+        <div>
+          <p className="text-sm font-bold text-team-orange">Coach</p>
+          <h1 className="mt-1 text-2xl font-black text-team-navy sm:text-3xl">教練後台</h1>
+        </div>
+        <Card>
+          <h2 className="text-xl font-black text-team-navy">請輸入教練密碼</h2>
+          <p className="mt-2 text-sm leading-6 text-team-muted">此密碼只用來避免學生誤入後台。資料仍保存在目前這台裝置的瀏覽器。</p>
+          <form
+            className="mt-5 grid gap-3"
+            onSubmit={(event) => {
+              event.preventDefault()
+              unlockCoachPage()
+            }}
+          >
+            <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type="password"
+              inputMode="numeric"
+              autoComplete="current-password"
+              placeholder="輸入密碼"
+              className="min-h-12 rounded-lg border border-slate-200 p-3 text-lg outline-none focus:border-team-blue focus:ring-4 focus:ring-blue-100"
+            />
+            {message && <p className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{message}</p>}
+            <Button type="submit">進入教練後台</Button>
+          </form>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -90,7 +139,19 @@ export const CoachPage = () => {
           <p className="text-sm font-bold text-team-orange">Coach</p>
           <h1 className="mt-1 text-2xl font-black text-team-navy sm:text-3xl">教練查看</h1>
         </div>
-        <Button type="button" onClick={createRound}><Plus size={18} />開始新一輪反思</Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              sessionStorage.removeItem(COACH_AUTH_KEY)
+              setIsAuthenticated(false)
+            }}
+          >
+            鎖定後台
+          </Button>
+          <Button type="button" onClick={createRound}><Plus size={18} />開始新一輪反思</Button>
+        </div>
       </div>
       {message && <p className="rounded-lg bg-blue-50 p-3 text-sm font-semibold text-team-navy">{message}</p>}
 
