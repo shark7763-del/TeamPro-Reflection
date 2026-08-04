@@ -2,6 +2,8 @@ import type { AppSettings, ReflectionRecord, ReflectionRound, Student, TeamProDa
 import { createDefaultStudents, createMissingDefaultStudents } from '../data/defaultStudents'
 
 export const STORAGE_KEY = 'teampro-reflection-data'
+export const DEFAULT_GOOGLE_SCRIPT_URL =
+  'https://script.google.com/macros/s/AKfycbzIV6Dlpu1BoTbr0OIcANHvbVT1z9RBfOG5u2ATvjCI0XeNxWe5zBWFQTSW5jU7Ps_40Q/exec'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
@@ -28,6 +30,7 @@ export const createDefaultData = (): TeamProData => {
     settings: {
       teamName: 'TeamPro',
       currentRoundId: round.id,
+      googleScriptUrl: DEFAULT_GOOGLE_SCRIPT_URL,
     },
   }
 }
@@ -96,8 +99,16 @@ export const loadData = (): TeamProData => {
       new Date().toISOString(),
       createId,
     )
-    if (missingDefaultStudents.length === 0) return parsed
-    const migrated = { ...parsed, students: [...parsed.students, ...missingDefaultStudents] }
+    const shouldSetGoogleScriptUrl = !parsed.settings.googleScriptUrl
+    if (missingDefaultStudents.length === 0 && !shouldSetGoogleScriptUrl) return parsed
+    const migrated = {
+      ...parsed,
+      students: [...parsed.students, ...missingDefaultStudents],
+      settings: {
+        ...parsed.settings,
+        googleScriptUrl: parsed.settings.googleScriptUrl || DEFAULT_GOOGLE_SCRIPT_URL,
+      },
+    }
     saveData(migrated)
     return migrated
   } catch {
@@ -124,4 +135,5 @@ export const makeId = createId
 export const makeSettings = (currentRoundId: string): AppSettings => ({
   teamName: 'TeamPro',
   currentRoundId,
+  googleScriptUrl: DEFAULT_GOOGLE_SCRIPT_URL,
 })

@@ -110,6 +110,10 @@ export const CoachPage = () => {
       setMessage(result.message)
       return
     }
+    if (result.data.students.length === 0 && data.students.length > 0) {
+      setMessage('Google Sheet 目前沒有學生名單，已保留本機資料。請先按「同步到 Google Sheet」。')
+      return
+    }
     setData({ ...result.data, settings: { ...result.data.settings, googleScriptUrl: url } })
     setMessage('已從 Google Sheet 更新共同後台資料。')
   }
