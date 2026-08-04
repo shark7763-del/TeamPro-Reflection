@@ -20,6 +20,7 @@ const defaultStudentSeeds: DefaultStudentSeed[] = [
   { name: '田宸鑫', grade: '七年級', note: '班級701' },
   { name: '游鈞翔', grade: '七年級', note: '班級701' },
   { name: '陳芊彤', grade: '八年級', note: '班級801' },
+  { name: '林駿堯', grade: '八年級', note: '班級801' },
   { name: '王柏鈞', grade: '八年級', note: '班級801 / 座號1 / 男 / 品勢' },
   { name: '許景皓', grade: '八年級', note: '班級801 / 座號06 / 男 / 對打' },
   { name: '上官哲忻', grade: '八年級', note: '班級801 / 座號15 / 男 / 品勢' },
@@ -44,3 +45,18 @@ export const createDefaultStudents = (createdAt: string, makeId: (prefix: string
     note: student.note,
     createdAt,
   }))
+
+export const createMissingDefaultStudents = (
+  existingNames: Set<string>,
+  createdAt: string,
+  makeId: (prefix: string) => string,
+): Student[] =>
+  defaultStudentSeeds
+    .filter((student) => !existingNames.has(student.name))
+    .map((student) => ({
+      id: makeId('student'),
+      name: student.name,
+      grade: student.grade,
+      note: student.note,
+      createdAt,
+    }))

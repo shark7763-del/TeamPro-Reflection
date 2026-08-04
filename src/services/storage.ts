@@ -1,5 +1,5 @@
 import type { AppSettings, ReflectionRecord, ReflectionRound, Student, TeamProData } from '../types/domain'
-import { createDefaultStudents } from '../data/defaultStudents'
+import { createDefaultStudents, createMissingDefaultStudents } from '../data/defaultStudents'
 
 export const STORAGE_KEY = 'teampro-reflection-data'
 
@@ -91,7 +91,15 @@ export const loadData = (): TeamProData => {
     if (!validateData(parsed)) {
       throw new Error('資料格式不符合 TeamPro v1')
     }
-    return parsed
+    const missingDefaultStudents = createMissingDefaultStudents(
+      new Set(parsed.students.map((student) => student.name)),
+      new Date().toISOString(),
+      createId,
+    )
+    if (missingDefaultStudents.length === 0) return parsed
+    const migrated = { ...parsed, students: [...parsed.students, ...missingDefaultStudents] }
+    saveData(migrated)
+    return migrated
   } catch {
     const fallback = createDefaultData()
     saveData(fallback)
