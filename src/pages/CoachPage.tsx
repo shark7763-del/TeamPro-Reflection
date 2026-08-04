@@ -7,7 +7,7 @@ import { EmptyState } from '../components/EmptyState'
 import { roleLabels } from '../data/questions'
 import { useTeamProData } from '../hooks/useTeamProData'
 import { pullFromGoogleSheet, pushToGoogleSheet } from '../services/googleSheetSync'
-import { makeId, parseBackup } from '../services/storage'
+import { DEFAULT_GOOGLE_SCRIPT_URL, isValidGoogleScriptUrl, makeId, parseBackup } from '../services/storage'
 import type { ReflectionRound } from '../types/domain'
 import { average, formatDate } from '../utils/score'
 import { exportJson, exportRecordsCsv } from '../utils/export'
@@ -90,6 +90,15 @@ export const CoachPage = () => {
   }
 
   const saveScriptUrl = () => {
+    if (!isValidGoogleScriptUrl(scriptUrl)) {
+      setScriptUrl(DEFAULT_GOOGLE_SCRIPT_URL)
+      setData((current) => ({
+        ...current,
+        settings: { ...current.settings, googleScriptUrl: DEFAULT_GOOGLE_SCRIPT_URL },
+      }))
+      setMessage('網址格式錯誤，已改回正確的 Web App URL。請不要使用 /macros/library/ 開頭的網址。')
+      return
+    }
     setData((current) => ({
       ...current,
       settings: { ...current.settings, googleScriptUrl: scriptUrl.trim() },
@@ -98,13 +107,13 @@ export const CoachPage = () => {
   }
 
   const pushCloud = async () => {
-    const url = scriptUrl.trim() || data.settings.googleScriptUrl || ''
+    const url = isValidGoogleScriptUrl(scriptUrl) ? scriptUrl.trim() : DEFAULT_GOOGLE_SCRIPT_URL
     const result = await pushToGoogleSheet(url, { ...data, settings: { ...data.settings, googleScriptUrl: url } })
     setMessage(result.message)
   }
 
   const pullCloud = async () => {
-    const url = scriptUrl.trim() || data.settings.googleScriptUrl || ''
+    const url = isValidGoogleScriptUrl(scriptUrl) ? scriptUrl.trim() : DEFAULT_GOOGLE_SCRIPT_URL
     const result = await pullFromGoogleSheet(url)
     if (!result.ok || !result.data) {
       setMessage(result.message)

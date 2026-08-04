@@ -5,6 +5,9 @@ export const STORAGE_KEY = 'teampro-reflection-data'
 export const DEFAULT_GOOGLE_SCRIPT_URL =
   'https://script.google.com/macros/s/AKfycbzIV6Dlpu1BoTbr0OIcANHvbVT1z9RBfOG5u2ATvjCI0XeNxWe5zBWFQTSW5jU7Ps_40Q/exec'
 
+export const isValidGoogleScriptUrl = (url?: string) =>
+  !!url && /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(url.trim())
+
 const today = () => new Date().toISOString().slice(0, 10)
 
 const createId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`
@@ -99,14 +102,16 @@ export const loadData = (): TeamProData => {
       new Date().toISOString(),
       createId,
     )
-    const shouldSetGoogleScriptUrl = !parsed.settings.googleScriptUrl
+    const shouldSetGoogleScriptUrl = !isValidGoogleScriptUrl(parsed.settings.googleScriptUrl)
     if (missingDefaultStudents.length === 0 && !shouldSetGoogleScriptUrl) return parsed
     const migrated = {
       ...parsed,
       students: [...parsed.students, ...missingDefaultStudents],
       settings: {
         ...parsed.settings,
-        googleScriptUrl: parsed.settings.googleScriptUrl || DEFAULT_GOOGLE_SCRIPT_URL,
+        googleScriptUrl: isValidGoogleScriptUrl(parsed.settings.googleScriptUrl)
+          ? parsed.settings.googleScriptUrl
+          : DEFAULT_GOOGLE_SCRIPT_URL,
       },
     }
     saveData(migrated)

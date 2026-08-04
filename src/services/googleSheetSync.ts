@@ -1,4 +1,5 @@
 import type { TeamProData } from '../types/domain'
+import { isValidGoogleScriptUrl } from './storage'
 
 export interface SyncResult {
   ok: boolean
@@ -7,8 +8,8 @@ export interface SyncResult {
 }
 
 const request = async (url: string, action: string, data?: TeamProData): Promise<SyncResult> => {
-  if (!url.trim()) {
-    return { ok: false, message: '尚未設定 Google Apps Script Web App URL。' }
+  if (!isValidGoogleScriptUrl(url)) {
+    return { ok: false, message: 'Google Apps Script URL 格式錯誤，請使用結尾為 /exec 的 Web App URL。' }
   }
 
   try {
